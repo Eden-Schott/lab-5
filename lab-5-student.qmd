@@ -57,6 +57,47 @@ Detective Wickham reaches out to you...
 ```{r}
 #| label: inspecting-crime-scene-report
 
+# pull description of the crime by filtering out all crimes from crime_scene_report that aren't murders occurring on the date and in SQL City
+crime_description <- crime_scene_report |>
+  filter(date == "20180115", 
+         type == "murder", 
+         city == "SQL City") |>
+  select(description)
+# clue 1: "Security footage shows that there were 2 witnesses. The first witness lives at the last house on "Northwestern Dr". The second witness, named Annabel, lives somewhere on "Franklin Ave"."
+
+# find the id of the witnesses
+witness_1 <- person |>
+  filter(address_street_name == "Franklin Ave", 
+         str_detect(name, "Annabel"))
+witness_2 <- person |>
+  filter(address_street_name == "Northwestern Dr") |> 
+  arrange(desc(address_number)) |>
+  slice_head(n = 1)
+# clue 2: id to match with interview is 16371 and 14887
+witness_interviews <- interview |>
+  filter(person_id %in% c("16371", "14887"))
+# clue 3: "I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th."
+# "I heard a gunshot and then saw a man run out. He had a "Get Fit Now Gym" bag. The membership number on the bag started with "48Z". Only gold members have those bags. The man got into a car with a plate that included "H42W"."
+
+# pull all data from Get Fit Now with gold members with membership number starting with "48Z"
+member_suspect <- get_fit_now_member |>
+  filter(membership_status == "gold", 
+         str_detect(id, "48Z"))
+# cross check members 48Z7A and 48Z55 with license plate "H42W"
+license_suspect <- drivers_license |>
+  filter(gender == "male", 
+         str_detect(plate_number, "H42W"))
+
+# search person for individual with the license id and person id 
+suspect <- person |>
+  filter((license_id %in% c("423327", "664760")),
+         (id %in% c("28819", "67318")))
+
+#check interview with suspect 67318
+suspect_interview <- interview |>
+  filter(person_id== "67318")
+# clue 5: "I was hired by a woman with a lot of money. I don't know her name but I know she's around 5'5" (65") or 5'7" (67"). She has red hair and she drives a Tesla Model S. I know that she attended the SQL Symphony Concert 3 times in December 2017."
+
 ```
 
 
