@@ -54,6 +54,7 @@ Detective Wickham reaches out to you...
 
 > A crime has taken place and I need your help! There was a murder in SQL City sometime on January 15, 2018. Could you retrieve the crime scene report from the police department’s database and follow the clues to find the person responsible for the murder?!
 
+### Inspecting Crime Scene Report
 ```{r}
 #| label: inspecting-crime-scene-report
 
@@ -63,10 +64,12 @@ crime_description <- crime_scene_report |>
          type == "murder", 
          city == "SQL City") |>
   select(description)
-# clue 1: "Security footage shows that there were 2 witnesses. The first witness lives at the last house on "Northwestern Dr". The second witness, named Annabel, lives somewhere on "Franklin Ave"."
 
 ```
+#### Clue 1: 
+> "Security footage shows that there were 2 witnesses. The first witness lives at the last house on "Northwestern Dr". The second witness, named Annabel, lives somewhere on "Franklin Ave"."
 
+### Finding Witnesses
 ```{r}
 #| label: find-witnesses
 
@@ -78,14 +81,18 @@ witness_2 <- person |>
   filter(address_street_name == "Northwestern Dr") |> 
   arrange(desc(address_number)) |>
   slice_head(n = 1)
-# clue 2: id to match with interview is 16371 and 14887
+
+# id to match with interview is 16371 and 14887
 witness_interviews <- interview |>
   filter(person_id %in% c("16371", "14887"))
-# clue 3: "I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th."
-# "I heard a gunshot and then saw a man run out. He had a "Get Fit Now Gym" bag. The membership number on the bag started with "48Z". Only gold members have those bags. The man got into a car with a plate that included "H42W"."
 
 ```
+#### Clues 2:
+> "I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th."
 
+> "I heard a gunshot and then saw a man run out. He had a "Get Fit Now Gym" bag. The membership number on the bag started with "48Z". Only gold members have those bags. The man got into a car with a plate that included "H42W"."
+
+### Finding id Numbers Based on Clues 3
 ```{r}
 #| label: inspecting-get-fit-now-member
 
@@ -93,6 +100,7 @@ witness_interviews <- interview |>
 member_suspect <- get_fit_now_member |>
   filter(membership_status == "gold", 
          str_detect(id, "48Z"))
+
 # cross check members 48Z7A and 48Z55 with license plate "H42W"
 license_suspect <- drivers_license |>
   filter(gender == "male", 
@@ -100,6 +108,7 @@ license_suspect <- drivers_license |>
 
 ```
 
+### Connecting the Four Found ids To Find One Individual and Referencing Their Interview
 ```{r}
 #| label: find-suspect
 
@@ -111,13 +120,15 @@ suspect <- person |>
 #check interview with suspect 67318
 suspect_interview <- interview |>
   filter(person_id== "67318")
-# clue 5: "I was hired by a woman with a lot of money. I don't know her name but I know she's around 5'5" (65") or 5'7" (67"). She has red hair and she drives a Tesla Model S. I know that she attended the SQL Symphony Concert 3 times in December 2017."
 ```
+#### Clue 3: 
+> "I was hired by a woman with a lot of money. I don't know her name but I know she's around 5'5" (65") or 5'7" (67"). She has red hair and she drives a Tesla Model S. I know that she attended the SQL Symphony Concert 3 times in December 2017."
 
+### Using the Description From Our First Suspect to Find the Final Suspect
 ```{r}
 #| label: find-who-hired
 
-# find suspect based on discription 
+# find suspect based on description 
 final_license_suspect <- drivers_license |>
   filter(car_make == "Tesla",
          car_model == "Model S",
@@ -129,21 +140,22 @@ final_license_suspect <- drivers_license |>
 final_suspect <- person |>
   filter(license_id == "918773")
 
+```
+
+### Confirming Suspicions 
+```{r}
+#| label: cross-check
+
 # interview of suspect
 final_suspect_interview <- interview |>
   filter(person_id == "78881")
-# no interview!!
 
 # cross check that the suspect had alot of money based on ssn
 final_suspect_income <- income |>
   filter(ssn == "961388910")
-# annual income is $278000, yeah that's alot
-
 ```
-
-**Follow the evidence to the person responsible for the murder, building a report as you go.**
-Hint: Make sure you check for interviews with any suspects!
-
+**This suspect has not been interviewed but I can confirm an annual income of $278000**
+*(yeah that's a lot).*
 
 ## And the final suspect is...
 
