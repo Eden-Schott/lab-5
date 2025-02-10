@@ -147,4 +147,4 @@ Hint: Make sure you check for interviews with any suspects!
 
 ## And the final suspect is...
 
-*Put the name of the person responsible for the murder here:*
+#### <span style="color:red;">Red Korb</span>
