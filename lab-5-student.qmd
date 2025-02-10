@@ -114,6 +114,32 @@ suspect_interview <- interview |>
 # clue 5: "I was hired by a woman with a lot of money. I don't know her name but I know she's around 5'5" (65") or 5'7" (67"). She has red hair and she drives a Tesla Model S. I know that she attended the SQL Symphony Concert 3 times in December 2017."
 ```
 
+```{r}
+#| label: find-who-hired
+
+# find suspect based on discription 
+final_license_suspect <- drivers_license |>
+  filter(car_make == "Tesla",
+         car_model == "Model S",
+         gender == "female",
+         hair_color == "red",
+         (height %in% c("65", "67")))
+
+# find suspect id and ssn
+final_suspect <- person |>
+  filter(license_id == "918773")
+
+# interview of suspect
+final_suspect_interview <- interview |>
+  filter(person_id == "78881")
+# no interview!!
+
+# cross check that the suspect had alot of money based on ssn
+final_suspect_income <- income |>
+  filter(ssn == "961388910")
+# annual income is $278000, yeah that's alot
+
+```
 
 **Follow the evidence to the person responsible for the murder, building a report as you go.**
 Hint: Make sure you check for interviews with any suspects!
